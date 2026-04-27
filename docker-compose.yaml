@@ -1,0 +1,17 @@
+services:
+  rocom-push:
+    build: .
+    container_name: rocom-push
+    restart: unless-stopped
+    volumes:
+      # 宿主机配置文件（推完改URL不用重新构建镜像）
+      - ./config.yaml:/app/config.yaml:ro
+      # 推送记录持久化（防止重启后重复推送）
+      - ./data:/data
+    environment:
+      - TZ=Asia/Shanghai
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
