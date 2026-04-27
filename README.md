@@ -89,7 +89,7 @@ docker compose logs -f
 2. 复制 UID 和 SendKey 分别填入对应字段
 3. 将 `serverchan` 改为 `true`
 
-> ⚠️ Server酱³与 Turbo 不兼容，请使用³版本。
+> ⚠️ 本项目未支持 Server酱Turbo ，请使用 Server酱³ 。
 
 ## 目录结构
 
