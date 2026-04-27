@@ -12,7 +12,7 @@ serverchan: false
 # Bark配置
 bark_key: "placeholder"
 bark_server: "https://api.day.app"
-bark_icon: "https://d1.aag.moe/public/2026/04/27/91e1e7cbf665f0a4.png"
+bark_icon: "https://raw.githubusercontent.com/JayeGT002/rocom-push/main/logo.png"
 
 # 飞书配置
 feishu_hook: "placeholder"

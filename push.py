@@ -66,7 +66,7 @@ def merge_config() -> dict:
     # ── Bark ──
     cfg["bark_key"] = settings.get("bark_key", "")
     cfg["bark_server"] = settings.get("bark_server", "https://bark.momolab.cc")
-    cfg["bark_icon"] = settings.get("bark_icon", "https://d1.aag.moe/public/2026/04/27/91e1e7cbf665f0a4.png")
+    cfg["bark_icon"] = settings.get("bark_icon", "https://raw.githubusercontent.com/JayeGT002/rocom-push/main/logo.png")
 
     # ── 飞书 ──
     cfg["feishu_hook"] = settings.get("feishu_hook", "")
