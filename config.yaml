@@ -1,9 +1,0 @@
-# 洛克王国远行商人推送配置
-
-base_url: "https://wegame.shallow.ink"
-
-# 检查间隔（秒）
-check_interval: 60
-
-# 推送记录文件路径
-record_file: "/data/last_push.json"

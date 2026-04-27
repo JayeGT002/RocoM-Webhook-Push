@@ -28,7 +28,7 @@ log = logging.getLogger("rocom-push")
 
 # ─── 配置加载 ───
 def load_settings(path: str = "settings.yaml") -> dict:
-    """加载 settings.yaml（渠道总开关 + 各渠道配置）"""
+    """加载 settings.yaml（渠道总开关 + 各渠道配置 + 所有凭证）"""
     if not Path(path).exists():
         log.warning("settings.yaml 不存在，跳过渠道配置加载")
         return {}
@@ -44,61 +44,35 @@ def load_settings(path: str = "settings.yaml") -> dict:
         return {}
 
 
-def load_key_file(path: str = "credentials.key") -> dict:
-    """加载 credentials.key 作为补充配置"""
-    if Path(path).exists():
-        try:
-            with open(path, encoding="utf-8") as f:
-                return yaml.safe_load(f) or {}
-        except Exception:
-            pass
-    return {}
-
-
 def merge_config() -> dict:
     """
-    配置合并优先级（高 → 低）：
-    环境变量 > credentials.key > settings.yaml 默认值
+    配置全部来自 settings.yaml（含基础配置、渠道开关、各渠道凭证）
     """
-    # 1. 加载 settings.yaml
     settings_path = Path(__file__).parent / "settings.yaml"
     settings = load_settings(settings_path)
 
-    # 2. credentials.key
-    key_path = Path(__file__).parent / "credentials.key"
-    key_cfg = load_key_file(key_path)
-
-    # 3. 环境变量（来自 .wegame.env，通过 docker-compose env_file 注入）
-    def env(key: str, fallback="") -> str:
-        return os.environ.get(key, key_cfg.get(key.lower(), fallback))
-
-    def env_bool(key: str, fallback: bool = False) -> bool:
-        val = os.environ.get(key, str(key_cfg.get(key.lower(), fallback)))
-        return val.lower() in ("true", "1", "yes")
-
-    # ── 渠道开关 ──
+    # ── 基础配置 ──
     cfg = {
-        "bark_enabled": env_bool("BARK_ENABLED", settings.get("bark", True)),
-        "feishu_enabled": env_bool("FEISHU_ENABLED", settings.get("feishu", False)),
-        "serverchan_enabled": env_bool("SERVERCHAN_ENABLED", settings.get("serverchan", False)),
+        "wegame_api_key": settings.get("wegame_api_key", ""),
+        "base_url": settings.get("base_url", "https://wegame.shallow.ink"),
+        "record_file": "/data/last_push.json",
     }
 
-    # ── 基础配置 ──
-    cfg["wegame_api_key"] = env("WEGAME_API_KEY", "")
-    cfg["base_url"] = os.environ.get("BASE_URL") or key_cfg.get("base_url", "https://wegame.shallow.ink")
-    cfg["record_file"] = os.environ.get("RECORD_FILE") or key_cfg.get("record_file", "/data/last_push.json")
+    # ── 渠道开关 ──
+    cfg["bark_enabled"] = settings.get("bark", True)
+    cfg["feishu_enabled"] = settings.get("feishu", False)
+    cfg["serverchan_enabled"] = settings.get("serverchan", False)
 
     # ── Bark ──
-    bark_cfg = settings.get("bark", {})
-    cfg["bark_key"] = env("BARK_KEY", "")
-    cfg["bark_server"] = env("BARK_SERVER", bark_cfg.get("server", "https://bark.momolab.cc"))
-    cfg["bark_icon"] = env("BARK_ICON", bark_cfg.get("icon", "https://d1.aag.moe/public/2026/04/27/91e1e7cbf665f0a4.png"))
+    cfg["bark_key"] = settings.get("bark_key", "")
+    cfg["bark_server"] = settings.get("bark_server", "https://bark.momolab.cc")
+    cfg["bark_icon"] = settings.get("bark_icon", "https://d1.aag.moe/public/2026/04/27/91e1e7cbf665f0a4.png")
 
     # ── 飞书 ──
-    cfg["feishu_hook"] = env("FEISHU_HOOK", "")
+    cfg["feishu_hook"] = settings.get("feishu_hook", "")
 
     # ── Server酱 ──
-    cfg["serverchan_key"] = env("SERVERCHAN_KEY", "")
+    cfg["serverchan_key"] = settings.get("serverchan_key", "")
 
     return cfg
 

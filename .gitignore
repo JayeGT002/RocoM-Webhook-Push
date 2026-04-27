@@ -2,8 +2,11 @@
 *.key
 credentials.key
 
-# 用户配置（按需创建）
+# 用户配置
 settings.yaml
+
+# 环境变量
+.wegame.env
 
 # Python
 __pycache__/
@@ -16,3 +19,6 @@ __pycache__/
 # 数据与日志
 data/
 *.log
+
+# 基础配置（已合并到 settings.yaml）
+config.yaml
