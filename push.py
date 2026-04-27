@@ -27,65 +27,74 @@ log = logging.getLogger("rocom-push")
 
 
 # ─── 配置加载 ───
-def load_key_file(path: str = "credentials.key") -> dict:
-    """加载凭证文件，支持 YAML 格式。文件不存在时尝试环境变量。"""
+def load_settings(path: str = "settings.yaml") -> dict:
+    """加载 settings.yaml（渠道总开关 + 各渠道配置）"""
     if Path(path).exists():
         with open(path, encoding="utf-8") as f:
             return yaml.safe_load(f) or {}
-
-    # 兜底：从环境变量读取
-    return {
-        "wegame_api_key": os.environ.get("WEGAME_API_KEY", ""),
-        "bark_enabled": os.environ.get("BARK_ENABLED", "false").lower() == "true",
-        "bark_key": os.environ.get("BARK_KEY", ""),
-        "bark_server": os.environ.get("BARK_SERVER", "https://bark.momolab.cc"),
-        "bark_icon": os.environ.get("BARK_ICON", ""),
-        "feishu_hook": os.environ.get("FEISHU_HOOK", ""),
-    }
+    return {}
 
 
-def load_config(path: str = "config.yaml", key_path: str = "credentials.key") -> dict:
-    """加载主配置，凭证从 key 文件或环境变量读取"""
-    with open(path, encoding="utf-8") as f:
-        cfg = yaml.safe_load(f)
+def load_key_file(path: str = "credentials.key") -> dict:
+    """加载 credentials.key 作为补充配置"""
+    if Path(path).exists():
+        with open(path, encoding="utf-8") as f:
+            return yaml.safe_load(f) or {}
+    return {}
 
+
+def merge_config() -> dict:
+    """
+    配置合并优先级（高 → 低）：
+    环境变量 > credentials.key > settings.yaml 默认值
+    """
+    # 1. 加载 settings.yaml
+    settings_path = Path(__file__).parent / "settings.yaml"
+    settings = load_settings(settings_path)
+
+    # 2. credentials.key
+    key_path = Path(__file__).parent / "credentials.key"
     key_cfg = load_key_file(key_path)
 
-    # 凭证注入：环境变量 > credentials.key
-    cfg["wegame_api_key"] = os.environ.get("WEGAME_API_KEY") or key_cfg.get("wegame_api_key", "")
+    # 3. 环境变量（来自 .wegame.env，通过 docker-compose env_file 注入）
+    def env(key: str, fallback="") -> str:
+        return os.environ.get(key, key_cfg.get(key.lower(), fallback))
 
-    webhook_cfg = cfg.setdefault("webhook", {})
+    def env_bool(key: str, fallback: bool = False) -> bool:
+        val = os.environ.get(key, str(key_cfg.get(key.lower(), fallback)))
+        return val.lower() in ("true", "1", "yes")
 
-    bark_cfg = webhook_cfg.setdefault("bark", {})
-    bark_cfg["enabled"] = os.environ.get("BARK_ENABLED", "").lower() == "true" or key_cfg.get("bark_enabled", False)
-    bark_cfg["key"] = os.environ.get("BARK_KEY") or key_cfg.get("bark_key", "")
-    bark_cfg["server"] = os.environ.get("BARK_SERVER") or key_cfg.get("bark_server", "https://bark.momolab.cc")
+    # ── 渠道开关 ──
+    cfg = {
+        "bark_enabled": env_bool("BARK_ENABLED", settings.get("bark", True)),
+        "feishu_enabled": env_bool("FEISHU_ENABLED", settings.get("feishu", False)),
+        "serverchan_enabled": env_bool("SERVERCHAN_ENABLED", settings.get("serverchan", False)),
+    }
 
-    feishu_cfg = webhook_cfg.setdefault("feishu", {})
-    feishu_cfg["url"] = os.environ.get("FEISHU_HOOK") or key_cfg.get("feishu_hook", "")
+    # ── 基础配置 ──
+    cfg["wegame_api_key"] = env("WEGAME_API_KEY", "")
+    cfg["base_url"] = os.environ.get("BASE_URL") or key_cfg.get("base_url", "https://wegame.shallow.ink")
+    cfg["record_file"] = os.environ.get("RECORD_FILE") or key_cfg.get("record_file", "/data/last_push.json")
 
-    dingtalk_cfg = webhook_cfg.setdefault("dingtalk", {})
-    dingtalk_cfg["url"] = (
-        f"https://oapi.dingtalk.com/robot/send?access_token="
-        f"{os.environ.get('DINGTALK_TOKEN') or key_cfg.get('dingtalk_token', '')}"
-    )
-    dingtalk_cfg["secret"] = os.environ.get("DINGTALK_SECRET") or key_cfg.get("dingtalk_secret", "")
+    # ── Bark ──
+    bark_cfg = settings.get("bark", {})
+    cfg["bark_key"] = env("BARK_KEY", "")
+    cfg["bark_server"] = env("BARK_SERVER", bark_cfg.get("server", "https://bark.momolab.cc"))
+    cfg["bark_icon"] = env("BARK_ICON", bark_cfg.get("icon", "https://d1.aag.moe/public/2026/04/27/91e1e7cbf665f0a4.png"))
 
-    discord_cfg = webhook_cfg.setdefault("discord", {})
-    discord_cfg["url"] = os.environ.get("DISCORD_HOOK") or key_cfg.get("discord_hook", "")
+    # ── 飞书 ──
+    cfg["feishu_hook"] = env("FEISHU_HOOK", "")
 
-    cfg["bark_icon"] = os.environ.get("BARK_ICON") or key_cfg.get(
-        "bark_icon", "https://d1.aag.moe/public/2026/04/27/91e1e7cbf665f0a4.png"
-    )
+    # ── Server酱 ──
+    cfg["serverchan_key"] = env("SERVERCHAN_KEY", "")
+
     return cfg
 
 
 # ─── API 请求 ───
 def fetch_merchant_info(api_key: str, base_url: str) -> dict | None:
-    """使用 urllib 同步请求"""
     headers = {"X-API-Key": api_key}
     url = f"{base_url}/api/v1/games/rocom/merchant/info?refresh=true"
-
     req = urllib.request.Request(url, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
@@ -105,35 +114,17 @@ def fetch_merchant_info(api_key: str, base_url: str) -> dict | None:
         return None
 
 
-# ─── 钉钉签名 ───
-def dingtalk_sign(secret: str, timestamp: str) -> str:
-    import hmac
-    import base64
-
-    string_to_sign = f"{timestamp}\n{secret}"
-    hmac_code = hmac.new(
-        secret.encode("utf-8"),
-        string_to_sign.encode("utf-8"),
-        digestmod=hashlib.sha256,
-    ).digest()
-    sign = urllib.parse.quote_plus(base64.b64encode(hmac_code))
-    return sign
-
-
 # ─── 推送 ───
-def send_bark(bark_key: str, server: str, title: str, body: str, icon: str):
-    """Bark 推送（urllib 版本）"""
-    if not bark_key or "你的" in bark_key:
+def send_bark(cfg: dict, title: str, body: str):
+    if not cfg["bark_enabled"] or not cfg["bark_key"] or "你的" in cfg["bark_key"]:
         return
-
-    url = f"{server.rstrip('/')}/{bark_key}"
+    url = f"{cfg['bark_server'].rstrip('/')}/{cfg['bark_key']}"
     params = urllib.parse.urlencode({
         "title": title,
         "body": body,
-        "icon": icon,
+        "icon": cfg["bark_icon"],
         "sound": "new-mail",
     })
-
     try:
         req = urllib.request.Request(f"{url}?{params}")
         with urllib.request.urlopen(req, timeout=10) as resp:
@@ -145,16 +136,15 @@ def send_bark(bark_key: str, server: str, title: str, body: str, icon: str):
         log.warning(f"Bark 请求异常: {e}")
 
 
-def send_feishu(url: str, message: str):
-    """飞书推送"""
+def send_feishu(cfg: dict, message: str):
+    if not cfg["feishu_enabled"]:
+        return
+    url = cfg["feishu_hook"]
     if not url or "你的" in url:
         return
     payload = {"msg_type": "text", "content": {"text": message}}
     data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(
-        url, data=data,
-        headers={"Content-Type": "application/json"},
-    )
+    req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
             if resp.status == 200:
@@ -165,92 +155,38 @@ def send_feishu(url: str, message: str):
         log.warning(f"飞书请求异常: {e}")
 
 
-def send_dingtalk(url: str, message: str, secret: str):
-    """钉钉推送"""
-    if not url or "你的" in url:
+def send_serverchan(cfg: dict, title: str, desp: str):
+    if not cfg["serverchan_enabled"]:
         return
-    timestamp = str(round(time.time() * 1000))
-    sign = dingtalk_sign(secret, timestamp) if secret else ""
-    full_url = f"{url}&timestamp={timestamp}&sign={sign}" if secret else url
-    payload = {"msgtype": "text", "text": {"content": message}}
-    data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(
-        full_url, data=data,
-        headers={"Content-Type": "application/json"},
-    )
+    key = cfg["serverchan_key"]
+    if not key or "你的" in key:
+        return
+    url = f"https://sctapi.ftqq.com/{key}.send"
+    params = urllib.parse.urlencode({"title": title, "desp": desp})
     try:
+        req = urllib.request.Request(f"{url}?{params}")
         with urllib.request.urlopen(req, timeout=10) as resp:
             if resp.status == 200:
-                log.info("钉钉推送成功")
+                log.info("Server酱推送成功")
             else:
-                log.warning(f"钉钉推送失败: {resp.status}")
+                log.warning(f"Server酱推送失败: {resp.status}")
     except Exception as e:
-        log.warning(f"钉钉请求异常: {e}")
-
-
-def send_discord(url: str, message: dict):
-    """Discord 推送"""
-    if not url or "你的" in url:
-        return
-    data = json.dumps(message).encode("utf-8")
-    req = urllib.request.Request(
-        url, data=data,
-        headers={"Content-Type": "application/json"},
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            if resp.status == 204:
-                log.info("Discord 推送成功")
-            else:
-                log.warning(f"Discord 推送失败: {resp.status}")
-    except Exception as e:
-        log.warning(f"Discord 请求异常: {e}")
+        log.warning(f"Server酱请求异常: {e}")
 
 
 def send_notifications(props: list[dict], round_str: str, check_time: str, cfg: dict):
-    wh = cfg.get("webhook", {})
+    names = [p["name"] for p in props]
+    body_lines = [
+        f"轮次：{round_str}",
+        f"商品：{'、'.join(names)}",
+        f"检测时间：{check_time}",
+    ]
+    body = "\n".join(body_lines)
+    title = "你远哥来咯！"
 
-    # ── Bark ──
-    bark = wh.get("bark", {})
-    if bark.get("enabled"):
-        bark_key = bark.get("key", "")
-        bark_server = bark.get("server", "https://bark.momolab.cc")
-        bark_icon = cfg.get("bark_icon", "")
-
-        names = [p["name"] for p in props]
-        body_lines = [
-            f"轮次：{round_str}",
-            f"商品：{'、'.join(names)}",
-        ]
-
-        send_bark(
-            bark_key,
-            bark_server,
-            title="你远哥来咯！",
-            body="\n".join(body_lines),
-            icon=bark_icon,
-        )
-
-    # ── 飞书 ──
-    feishu_url = wh.get("feishu", {}).get("url", "")
-    if feishu_url and "你的" not in feishu_url:
-        message = f"🏪 远行商人上新！\n轮次：{round_str}\n检测时间：{check_time}\n商品：{'、'.join(p['name'] for p in props)}"
-        send_feishu(feishu_url, message)
-
-    # ── 钉钉 ──
-    dingtalk_url = wh.get("dingtalk", {}).get("url", "")
-    dingtalk_secret = wh.get("dingtalk", {}).get("secret", "")
-    if dingtalk_url and "你的" not in dingtalk_url:
-        message = f"🏪 远行商人上新！\n轮次：{round_str}\n检测时间：{check_time}\n商品：{'、'.join(p['name'] for p in props)}"
-        send_dingtalk(dingtalk_url, message, dingtalk_secret)
-
-    # ── Discord ──
-    discord_url = wh.get("discord", {}).get("url", "")
-    if discord_url and "你的" not in discord_url:
-        discord_msg = {
-            "content": f"**🏪 远行商人上新！**\n> 轮次：{round_str}\n> 检测时间：{check_time}\n> 商品：{'、'.join(p['name'] for p in props)}"
-        }
-        send_discord(discord_url, discord_msg)
+    send_bark(cfg, title, body)
+    send_feishu(cfg, f"🏪 远行商人上新！\n{body}")
+    send_serverchan(cfg, title, body)
 
 
 # ─── 持久化 ───
@@ -272,7 +208,6 @@ def save_record(path: str, record: dict):
 
 # ─── 数据解析 ───
 def get_current_round() -> tuple[int, str]:
-    """返回 (当前轮次 1-4, 轮次描述字符串)"""
     now = datetime.now()
     hour = now.hour
     if 8 <= hour < 12:
@@ -287,62 +222,48 @@ def get_current_round() -> tuple[int, str]:
 
 
 def get_next_round_start() -> datetime:
-    """计算距今最近的下次轮次开始时间"""
     now = datetime.now()
     hour = now.hour
-    minute = now.minute
-    second = now.second
-
-    round_hours = [8, 12, 16, 20]
-    for rh in round_hours:
-        if hour < rh or (hour == rh and (minute > 0 or second > 0)):
-            # 今天还有这个轮次
-            target = now.replace(hour=rh, minute=0, second=0, microsecond=0)
-            return target
-
-    # 今天所有轮次已过，等明天8点
+    for rh in [8, 12, 16, 20]:
+        if hour < rh or (hour == rh and now.minute > 0):
+            return now.replace(hour=rh, minute=0, second=0, microsecond=0)
     tomorrow = now + timedelta(days=1)
     return tomorrow.replace(hour=8, minute=0, second=0, microsecond=0)
 
 
 def get_active_props(data: dict) -> list[dict]:
-    """从 merchantActivities 中提取当前时间段内上架的全部商品"""
     activities = data.get("merchantActivities", [])
     if not activities:
         return []
-
     all_props = []
     now_ms = int(time.time() * 1000)
-
     for activity in activities:
         for prop in activity.get("get_props", []):
             start = prop.get("start_time", 0)
             end = prop.get("end_time", 0)
             if start <= now_ms <= end:
                 all_props.append(prop)
-
     return all_props
 
 
-def content_hash(data: dict, props: list[dict]) -> str:
-    """计算商品内容的简易哈希，用于判断内容是否变化"""
+def content_hash(props: list[dict]) -> str:
     names = sorted(p.get("name", "") for p in props)
     return hashlib.md5("|".join(names).encode()).hexdigest()
 
 
 # ─── 主循环 ───
 def main():
-    config_path = Path(__file__).parent / "config.yaml"
-    key_path = Path(__file__).parent / "credentials.key"
-    cfg = load_config(config_path, key_path)
+    cfg = merge_config()
 
     log.info("启动 rocom-push（轮次触发模式）")
-    log.info(f"轮次检查间隔: 每2分钟")
+    log.info(f"渠道开关: bark={cfg['bark_enabled']} feishu={cfg['feishu_enabled']} serverchan={cfg['serverchan_enabled']}")
+    log.info(f"等待下次轮次开始（8/12/16/20点）...")
 
-    api_key = cfg["wegame_api_key"]
-    base_url = cfg["base_url"]
-    record_file = cfg.get("record_file", "/data/last_push.json")
+    if not cfg["wegame_api_key"]:
+        log.error("WEGAME_API_KEY 未配置，请检查 .wegame.env 或 credentials.key")
+        return
 
+    record_file = cfg["record_file"]
     record = load_record(record_file)
     last_round = record.get("last_round", 0)
     last_hash = record.get("last_hash", "")
@@ -357,44 +278,38 @@ def main():
     signal.signal(signal.SIGINT, on_signal)
     signal.signal(signal.SIGTERM, on_signal)
 
-    log.info("等待下次轮次开始（8/12/16/20点）...")
-
     while not shutdown:
         now = datetime.now()
         current_round, round_str = get_current_round()
         check_time = now.strftime("%Y-%m-%d %H:%M:%S")
 
         if current_round == 0:
-            # 非活动时段：休眠到下次轮次
             next_start = get_next_round_start()
             sleep_seconds = (next_start - now).total_seconds()
             log.info(f"当前非活动时间，下次轮次 {next_start.strftime('%H:%M')}，休眠 {int(sleep_seconds)} 秒")
             time.sleep(max(sleep_seconds, 0))
             continue
 
-        # 轮次进行中
         if current_round != last_round:
-            # 刚进入新轮次，清空上次状态，重新开始检测
             log.info(f"=== 轮次 {round_str} 开始 ===")
             last_hash = ""
             last_round = current_round
 
         log.info(f"[{check_time}] 轮次 {round_str} 检测中...")
 
-        data = fetch_merchant_info(api_key, base_url)
+        data = fetch_merchant_info(cfg["wegame_api_key"], cfg["base_url"])
 
         if data:
             active = get_active_props(data)
-            current_hash = content_hash(data, active)
+            current_hash = content_hash(active)
             log.info(f"当前上架商品数: {len(active)}")
             for p in active:
                 log.info(f"  - {p.get('name')} (截止 {datetime.fromtimestamp(p.get('end_time',0)/1000).strftime('%H:%M')})")
 
             if current_hash and current_hash != last_hash:
-                log.info(f"检测到内容变化，推送！")
+                log.info("检测到内容变化，推送！")
                 send_notifications(active, round_str, check_time, cfg)
                 last_hash = current_hash
-                # 推送完毕，记录并停止检查，等待下次轮次
                 record["last_round"] = current_round
                 record["last_hash"] = current_hash
                 record["last_push"] = check_time
@@ -405,7 +320,6 @@ def main():
         else:
             log.warning("获取数据失败")
 
-        # 每2分钟检查一次
         time.sleep(120)
 
 

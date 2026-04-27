@@ -1,17 +1,16 @@
+# 部署前先：cp settings.yaml.example settings.yaml
 services:
   rocom-push:
     build: .
     container_name: rocom-push
     restart: unless-stopped
     env_file:
-      - ./credentials.key
+      - .wegame.env
     volumes:
-      # 宿主机配置文件
       - ./config.yaml:/app/config.yaml:ro
-      # 推送记录持久化（防止重启后重复推送）
+      - ./settings.yaml:/app/settings.yaml:ro
       - ./data:/data
     environment:
-      # 允许不挂载 credentials.key，直接用环境变量注入
       - TZ=Asia/Shanghai
     logging:
       driver: "json-file"

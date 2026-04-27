@@ -1,8 +1,19 @@
+# 敏感文件
 *.key
+credentials.key
+.wegame.env
+
+# 用户配置（按需创建）
+settings.yaml
+
+# Python
 __pycache__/
 *.pyc
 *.pyo
+
+# Git
 .git/
+
+# 数据与日志
 data/
-.env
 *.log
