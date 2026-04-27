@@ -83,7 +83,8 @@ docker compose logs -f
 
 ### Wegame API Key
 
-从 [wegame.shallow.ink](https://wegame.shallow.ink) 注册获取。
+由于前端正在构建，正式发布前端前可使用测试key：sk-ba042e079cf9ccb30e72b3d5af458f45
+（偷来的文案.jpg
 
 ### Bark
 
