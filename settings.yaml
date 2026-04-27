@@ -1,6 +1,6 @@
-# 洛克王国远行商人推送配置
+# 推送配置
 
-# 基础配置
+# WeGmae API配置
 wegame_api_key: "sk-placeholder"
 base_url: "https://wegame.shallow.ink"
 
@@ -9,15 +9,15 @@ bark: true
 feishu: false
 serverchan: false
 
-# ── Bark ──
+# Bark配置
 bark_key: "placeholder"
 bark_server: "https://bark.momolab.cc"
 bark_icon: "https://d1.aag.moe/public/2026/04/27/91e1e7cbf665f0a4.png"
 
-# ── 飞书 ──
+# 飞书配置
 feishu_hook: "placeholder"
 
-# ── Server酱 ──
-# 从 https://sc3.ft07.com/sendkey 获取 UID 和 SendKey
+# Serverchan配置
+# 不兼容Server酱Tubro，请从Server酱³官网 https://sc3.ft07.com 获取相关配置。
 serverchan_uid: "placeholder"
 serverchan_key: "placeholder"
