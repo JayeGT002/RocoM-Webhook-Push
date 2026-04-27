@@ -36,7 +36,7 @@ log = logging.getLogger("rocom-push")
 
 
 # ─── 配置加载 ───
-def load_settings(path: str = "settings.yaml") -> dict:
+def load_settings(path: str = "config/settings.yaml") -> dict:
     """加载 settings.yaml（渠道总开关 + 各渠道配置 + 所有凭证）"""
     if not Path(path).exists():
         log.warning("settings.yaml 不存在，跳过渠道配置加载")
@@ -57,7 +57,7 @@ def merge_config() -> dict:
     """
     配置全部来自 settings.yaml（含基础配置、渠道开关、各渠道凭证）
     """
-    settings_path = Path(__file__).parent / "settings.yaml"
+    settings_path = Path(__file__).parent / "config" / "settings.yaml"
     settings = load_settings(settings_path)
 
     # ── 基础配置 ──
