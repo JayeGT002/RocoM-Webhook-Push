@@ -1,16 +1,8 @@
-# 洛克王国远行商人推送
+![logo.png](https://raw.githubusercontent.com/JayeGT002/rocom-push/main/logo.png)
 
-监控洛克王国远行商人商品上架，有更新立即推送到你的设备。
+# RocoM-Webhook-Push - 远行商人Webhook推送通知
 
-![Logo](logo.png)
-
-## 支持的推送渠道
-
-| 渠道 | 说明 |
-|------|------|
-| **Bark** | iOS 推送，支持自定义图标 |
-| **飞书** | 飞书机器人 Webhook |
-| **Server酱³** | 支持 Server酱 V3（不兼容 Turbo） |
+基于[astrbot_plugin_rocom](https://github.com/Entropy-Increase-Team/astrbot_plugin_rocom)的「远行商人订阅」功能二次修改，支持Bark/飞书/Server酱³
 
 ## 工作原理
 
@@ -29,8 +21,6 @@
 - **检测到变化**：立即推送，然后停止检查，等待下次轮次
 - **内容无变化**：继续监控，2 分钟后再次检查
 
-推送判断基于商品列表的 **MD5 内容哈希**，与具体商品无关 —— 远行商人卖什么就推什么，不做白名单过滤。
-
 ## 快速部署
 
 ### 1. 下载项目
@@ -45,26 +35,29 @@ cd rocom-push
 编辑 `settings.yaml`，填入你的凭证：
 
 ```yaml
-# ── 基础配置 ──
-wegame_api_key: "从 Wegame API 获取"
+# 推送配置
 
-# ── 渠道开关 ──
+# WeGmae API配置
+wegame_api_key: "sk-placeholder"
+base_url: "https://wegame.shallow.ink"
+
+# 推送渠道开关（true 开启，false 关闭，默认启用bark通道，如非必要请修改。）
 bark: true
 feishu: false
 serverchan: false
 
-# ── Bark ──
-bark_key: "你的 Bark Key"
-bark_server: "https://api.day.app"         # 默认，无需修改
+# Bark配置
+bark_key: "placeholder"
+bark_server: "https://api.day.app"
 bark_icon: "https://raw.githubusercontent.com/JayeGT002/rocom-push/main/logo.png"
 
-# ── 飞书 ──
-feishu_hook: "https://open.feishu.cn/open-apis/bot/v2/hook/xxx"
+# 飞书配置
+feishu_hook: "placeholder"
 
-# ── Server酱³ ──
-# 从 https://sc3.ft07.com/sendkey 获取 UID 和 SendKey
-serverchan_uid: "你的 UID"
-serverchan_key: "你的 SendKey"
+# Serverchan配置
+# 不兼容Server酱Tubro，请从Server酱³官网 https://sc3.ft07.com 获取相关配置。
+serverchan_uid: "placeholder"
+serverchan_key: "placeholder"
 ```
 
 ### 3. 启动
@@ -83,7 +76,8 @@ docker compose logs -f
 
 ### Wegame API Key
 
-从 [wegame.shallow.ink](https://wegame.shallow.ink) 获取，填入 `wegame_api_key`。
+用这个！（？
+sk-ba042e079cf9ccb30e72b3d5af458f45
 
 ### Bark
 
@@ -94,7 +88,7 @@ docker compose logs -f
 ### 飞书
 
 1. 在飞书群中添加「自定义机器人」
-2. 复制 Webhook URL 填入 `feishu_hook`
+2. 复制 Webhook URL，填入 `feishu_hook`
 3. 将 `feishu` 改为 `true`
 
 ### Server酱³
@@ -116,6 +110,12 @@ rocom-push/
 └── logo.png            # 推送图标
 ```
 
-## 项目 License
+## 特别感谢
 
-MIT
+- [astrbot_plugin_rocom](https://github.com/Entropy-Increase-Team/astrbot_plugin_rocom):本项目基于astrbot_plugin_rocom插件的「远行商人订阅」功能二次修改
+- [熵增项目组](https://github.com/Entropy-Increase-Team):Wegame API Key支持
+- 感谢 @流绪 提供的GPT image2 logo支持
+
+## License
+
+本项目遵循 AGPL v3 协议。
