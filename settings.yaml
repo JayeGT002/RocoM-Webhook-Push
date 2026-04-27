@@ -1,5 +1,6 @@
-# WeGmae API配置
-wegame_api_key: ""
+# WeGmae API Key配置
+# 若API Key失效请提交issues或自行寻找可用WeGmae API Key
+wegame_api_key: "sk-ba042e079cf9ccb30e72b3d5af458f45"
 base_url: "https://wegame.shallow.ink"
 
 # 推送渠道开关（true 开启，false 关闭）
@@ -10,7 +11,7 @@ serverchan: false
 # Bark配置
 bark_key: ""
 bark_server: "https://api.day.app"
-bark_icon: ""
+bark_icon: "https://ghproxy.net/https://raw.githubusercontent.com/JayeGT002/RocoM-Webhook-Push/main/logo.png"
 
 # 飞书配置
 feishu_hook: ""
