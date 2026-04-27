@@ -22,8 +22,10 @@
 mkdir -p /opt/rocom-push && cd /opt/rocom-push
 # 下载 docker-compose.yaml
 curl -O https://raw.githubusercontent.com/JayeGT002/RocoM-Webhook-Push/main/docker-compose.yaml
-# 下载配置文件
-curl -O https://raw.githubusercontent.com/JayeGT002/RocoM-Webhook-Push/main/settings.yaml
+# 下载配置文件（如果本地已有 settings.yaml 目录，先删掉）
+[ -d settings.yaml ] && rm -rf settings.yaml
+touch settings.yaml
+curl -sO https://raw.githubusercontent.com/JayeGT002/RocoM-Webhook-Push/main/settings.yaml
 # 启动
 docker compose up -d
 ```
