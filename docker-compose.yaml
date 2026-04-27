@@ -1,6 +1,6 @@
 services:
   rocom-push:
-    build: .
+    image: ghcr.io/jayegt002/rocom-webhook-push:latest
     container_name: rocom-push
     restart: unless-stopped
     volumes:
