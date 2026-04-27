@@ -1,7 +1,5 @@
-# 推送配置
-
 # WeGmae API配置
-wegame_api_key: "sk-placeholder"
+wegame_api_key: ""
 base_url: "https://wegame.shallow.ink"
 
 # 推送渠道开关（true 开启，false 关闭）
@@ -10,14 +8,13 @@ feishu: false
 serverchan: false
 
 # Bark配置
-bark_key: "placeholder"
+bark_key: ""
 bark_server: "https://api.day.app"
-bark_icon: "https://raw.githubusercontent.com/JayeGT002/rocom-push/main/logo.png"
+bark_icon: ""
 
 # 飞书配置
-feishu_hook: "placeholder"
+feishu_hook: ""
 
 # Serverchan配置
-# 不兼容Server酱Tubro，请从Server酱³官网 https://sc3.ft07.com 获取相关配置。
-serverchan_uid: "placeholder"
-serverchan_key: "placeholder"
+serverchan_uid: ""
+serverchan_key: ""

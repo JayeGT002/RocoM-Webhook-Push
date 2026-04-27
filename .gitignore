@@ -2,9 +2,6 @@
 *.key
 credentials.key
 
-# 用户配置
-# （pull 后直接修改此文件的值即可）
-settings.yaml
 
 # 环境变量
 .wegame.env
