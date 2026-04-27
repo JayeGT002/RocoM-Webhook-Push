@@ -1,18 +1,17 @@
 #!/bin/bash
 set -e
 
-# /app/config 目录（挂载的宿主配置目录）
 CONFIG_DIR="/app/config"
 SETTINGS_FILE="${CONFIG_DIR}/settings.yaml"
 
 mkdir -p "${CONFIG_DIR}"
 
-# 如果 settings.yaml 不存在或为空，生成模板
 if [ ! -s "${SETTINGS_FILE}" ]; then
     echo "[entrypoint] settings.yaml 不存在，正在生成模板..."
     cat > "${SETTINGS_FILE}" << 'TEMPLATE'
-# WeGmae API配置
-wegame_api_key: ""
+# WeGmae API Key配置
+# 若API Key失效请提交issues或自行寻找可用WeGmae API Key
+wegame_api_key: "sk-ba042e079cf9ccb30e72b3d5af458f45"
 base_url: "https://wegame.shallow.ink"
 
 # 推送渠道开关（true 开启，false 关闭）
@@ -21,16 +20,16 @@ feishu: false
 serverchan: false
 
 # Bark配置
-bark_key: ""
+bark_key: "enter_your_bark_key"
 bark_server: "https://api.day.app"
-bark_icon: ""
+bark_icon: "https://ghproxy.net/https://raw.githubusercontent.com/JayeGT002/RocoM-Webhook-Push/main/logo.png"
 
 # 飞书配置
-feishu_hook: ""
+feishu_hook: "enter_your_feishu_hook"
 
 # Serverchan配置
-serverchan_uid: ""
-serverchan_key: ""
+serverchan_uid: "enter_your_serverchan_uid"
+serverchan_key: "enter_your_serverchan_key"
 TEMPLATE
     echo "[entrypoint] 模板已生成，请编辑 ${SETTINGS_FILE} 后重启容器"
 else
