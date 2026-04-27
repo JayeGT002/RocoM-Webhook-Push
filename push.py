@@ -1,3 +1,12 @@
+# RocoM-Webhook-Push - 洛克王国远行商人推送服务
+# Copyright (C) 2026 JayeGT002
+#
+# 本程序部分代码基于 astrbot_plugin_rocom (https://github.com/Entropy-Increase-Team/astrbot_plugin_rocom)
+#  Copyright (C) 2026 熵增项目组 / bvzrays
+#  遵循 GNU Affero General Public License v3.0
+#
+# 本程序遵循 AGPL-3.0 协议，完整许可证见 LICENSE 文件。
+
 """
 洛克王国远行商人推送程序
 轮次触发模式：整点唤醒 → 每2分钟检查一次 → 有变化立即推送 → 推送完停止检查直至下次轮次
