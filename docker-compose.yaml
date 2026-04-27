@@ -4,7 +4,7 @@ services:
     container_name: rocom-push
     restart: unless-stopped
     volumes:
-      - ./settings.yaml:/app/settings.yaml:ro
+      - ./settings.yaml:/app/settings.yaml
       - ./data:/data
     environment:
       - TZ=Asia/Shanghai
