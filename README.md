@@ -1,24 +1,14 @@
 <div align="center">
 <img alt="LOGO" src="./logo.png" width="256" height="256" />
 
-# RocoM-Webhook-Push - 远行商人Webhook推送通知
-
-基于[astrbot_plugin_rocom](https://github.com/Entropy-Increase-Team/astrbot_plugin_rocom)的「远行商人订阅」功能二次修改，支持Bark/飞书/Server酱³
-
+# RocoM-Webhook-Push
+远行商人Webhook推送通知，支持Bark/飞书/Server酱³
+本项目基于[astrbot_plugin_rocom](https://github.com/Entropy-Increase-Team/astrbot_plugin_rocom)的「远行商人订阅」功能二次修改
 </div>
 
 ## 工作原理
 
 程序运行在**轮次触发模式**：
-
-```
-8:00 ──→ 12:00 ──→ 16:00 ──→ 20:00 ──→ 次日 8:00
-  │          │          │          │
-检查中...   检查中...   检查中...   检查中...
-  ↓          ↓          ↓          ↓
- 每2分钟检查一次，有变化立即推送
-```
-
 - **非活动时间**（20:00～次日 08:00）：程序休眠，不占用资源
 - **轮次开始时**：唤醒并开始检查，每 2 分钟轮询一次
 - **检测到变化**：立即推送，然后停止检查，等待下次轮次
@@ -114,8 +104,8 @@ rocom-push/
 
 ## 特别感谢
 
-- [astrbot_plugin_rocom](https://github.com/Entropy-Increase-Team/astrbot_plugin_rocom): 本项目基于 astrbot_plugin_rocom 插件的「远行商人订阅」功能二次修改
-- [熵增项目组](https://github.com/Entropy-Increase-Team): Wegame API Key 支持
+- 本项目基于 [astrbot_plugin_rocom](https://github.com/Entropy-Increase-Team/astrbot_plugin_rocom) 插件的「远行商人订阅」功能二次修改
+- 感谢 [熵增项目组](https://github.com/Entropy-Increase-Team) 的 Wegame API Key 支持
 - 感谢 @流绪 提供的 GPT image2 logo 支持
 
 ## License
