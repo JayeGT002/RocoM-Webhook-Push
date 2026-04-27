@@ -1,7 +1,6 @@
 # 敏感文件
 *.key
 credentials.key
-.wegame.env
 
 # 用户配置（按需创建）
 settings.yaml
@@ -17,3 +16,6 @@ __pycache__/
 # 数据与日志
 data/
 *.log
+
+# 环境变量
+.wegame.env

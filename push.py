@@ -29,17 +29,29 @@ log = logging.getLogger("rocom-push")
 # ─── 配置加载 ───
 def load_settings(path: str = "settings.yaml") -> dict:
     """加载 settings.yaml（渠道总开关 + 各渠道配置）"""
-    if Path(path).exists():
+    if not Path(path).exists():
+        log.warning("settings.yaml 不存在，跳过渠道配置加载")
+        return {}
+    try:
         with open(path, encoding="utf-8") as f:
-            return yaml.safe_load(f) or {}
-    return {}
+            raw = yaml.safe_load(f)
+            if raw is None or all(not v for v in raw.values() if not isinstance(v, dict)):
+                log.warning("settings.yaml 为空，请配置 settings.yaml！")
+                return {}
+            return raw
+    except Exception as e:
+        log.warning(f"settings.yaml 加载异常: {e}")
+        return {}
 
 
 def load_key_file(path: str = "credentials.key") -> dict:
     """加载 credentials.key 作为补充配置"""
     if Path(path).exists():
-        with open(path, encoding="utf-8") as f:
-            return yaml.safe_load(f) or {}
+        try:
+            with open(path, encoding="utf-8") as f:
+                return yaml.safe_load(f) or {}
+        except Exception:
+            pass
     return {}
 
 

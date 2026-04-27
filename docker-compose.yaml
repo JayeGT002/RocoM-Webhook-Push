@@ -1,4 +1,3 @@
-# 部署前先：cp settings.yaml.example settings.yaml
 services:
   rocom-push:
     build: .
