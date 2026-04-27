@@ -10,6 +10,7 @@ RUN pip install --no-cache-dir PyYAML
 COPY push.py .
 COPY settings.yaml .
 COPY docker-entrypoint.sh .
+RUN chmod +x /app/docker-entrypoint.sh
 
 RUN mkdir -p /data
 
