@@ -1,14 +1,6 @@
 name: Build and Push Docker Image
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "push.py"
-      - "Dockerfile"
-      - "docker-entrypoint.sh"
-      - "docker-compose.yaml"
-      - "settings.yaml"
   workflow_dispatch:
 
 env:
