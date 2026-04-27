@@ -9,13 +9,13 @@ feishu: false
 serverchan: false
 
 # Bark配置
-bark_key: ""
+bark_key: "enter_your_bark_key"
 bark_server: "https://api.day.app"
 bark_icon: "https://ghproxy.net/https://raw.githubusercontent.com/JayeGT002/RocoM-Webhook-Push/main/logo.png"
 
 # 飞书配置
-feishu_hook: ""
+feishu_hook: "enter_your_feishu_hook"
 
 # Serverchan配置
-serverchan_uid: ""
-serverchan_key: ""
+serverchan_uid: "enter_your_serverchan_uid"
+serverchan_key: "enter_your_serverchan_key"
