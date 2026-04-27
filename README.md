@@ -19,7 +19,7 @@
 - **非活动时间**（20:00～次日 08:00）：程序休眠，不占用资源
 - **轮次开始时**：唤醒并开始检查，每 2 分钟轮询一次
 - **检测到变化**：立即推送，然后停止检查，等待下次轮次
-- **内容无变化**：继续监控，2 分钟后再次检查
+- **内容无变化**：继续监控， 2 分钟后再次检查
 
 ## 快速部署
 
@@ -38,7 +38,7 @@ cd rocom-push
 # 推送配置
 
 # WeGmae API配置
-wegame_api_key: "sk-placeholder"
+wegame_api_key: "从 https://wegame.shallow.ink 获取"
 base_url: "https://wegame.shallow.ink"
 
 # 推送渠道开关（true 开启，false 关闭，默认启用bark通道，如非必要请修改。）
@@ -47,17 +47,17 @@ feishu: false
 serverchan: false
 
 # Bark配置
-bark_key: "placeholder"
+bark_key: "你的 Bark Key"
 bark_server: "https://api.day.app"
 bark_icon: "https://raw.githubusercontent.com/JayeGT002/rocom-push/main/logo.png"
 
 # 飞书配置
-feishu_hook: "placeholder"
+feishu_hook: "你的飞书 Webhook URL"
 
 # Serverchan配置
 # 不兼容Server酱Tubro，请从Server酱³官网 https://sc3.ft07.com 获取相关配置。
-serverchan_uid: "placeholder"
-serverchan_key: "placeholder"
+serverchan_uid: "你的 UID"
+serverchan_key: "你的 SendKey"
 ```
 
 ### 3. 启动
@@ -76,8 +76,7 @@ docker compose logs -f
 
 ### Wegame API Key
 
-用这个！（？
-sk-ba042e079cf9ccb30e72b3d5af458f45
+从 [wegame.shallow.ink](https://wegame.shallow.ink) 注册获取。
 
 ### Bark
 
@@ -112,10 +111,10 @@ rocom-push/
 
 ## 特别感谢
 
-- [astrbot_plugin_rocom](https://github.com/Entropy-Increase-Team/astrbot_plugin_rocom):本项目基于astrbot_plugin_rocom插件的「远行商人订阅」功能二次修改
-- [熵增项目组](https://github.com/Entropy-Increase-Team):Wegame API Key支持
-- 感谢 @流绪 提供的GPT image2 logo支持
+- [astrbot_plugin_rocom](https://github.com/Entropy-Increase-Team/astrbot_plugin_rocom): 本项目基于 astrbot_plugin_rocom 插件的「远行商人订阅」功能二次修改
+- [熵增项目组](https://github.com/Entropy-Increase-Team): Wegame API Key 支持
+- 感谢 @流绪 提供的 GPT image2 logo 支持
 
 ## License
 
-本项目遵循 AGPL v3 协议。
+本项目遵循 [AGPLv3](https://www.gnu.org/licenses/agpl-3.0.html) 协议。
