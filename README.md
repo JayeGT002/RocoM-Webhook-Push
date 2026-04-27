@@ -1,8 +1,11 @@
+<div align="center">
 <img alt="LOGO" src="./logo.png" width="256" height="256" />
 
 # RocoM-Webhook-Push - 远行商人Webhook推送通知
 
 基于[astrbot_plugin_rocom](https://github.com/Entropy-Increase-Team/astrbot_plugin_rocom)的「远行商人订阅」功能二次修改，支持Bark/飞书/Server酱³
+
+</div>
 
 ## 工作原理
 
