@@ -255,6 +255,20 @@ def main():
 
     log.info("启动 rocom-push（轮次触发模式）")
     log.info(f"渠道开关: bark={cfg['bark_enabled']} feishu={cfg['feishu_enabled']} serverchan={cfg['serverchan_enabled']}")
+
+    # 启动时发送测试推送
+    if cfg["bark_enabled"] and cfg["bark_key"] and "你的" not in cfg["bark_key"]:
+        send_bark(cfg, "你远哥来咯", "启动成功，通知功能正常")
+        log.info("[启动测试] Bark 测试推送已发送")
+    elif cfg["feishu_enabled"] and cfg["feishu_hook"]:
+        send_feishu(cfg, "✅ 启动成功，通知功能正常")
+        log.info("[启动测试] 飞书测试推送已发送")
+    elif cfg["serverchan_enabled"] and cfg["serverchan_key"] and "placeholder" not in cfg["serverchan_key"]:
+        send_serverchan(cfg, "你远哥来咯", "启动成功，通知功能正常")
+        log.info("[启动测试] Server酱测试推送已发送")
+    else:
+        log.info("未启用任何推送渠道，跳过启动测试")
+
     log.info(f"等待下次轮次开始（8/12/16/20点）...")
 
     if not cfg["wegame_api_key"]:
