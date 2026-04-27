@@ -2,32 +2,14 @@
 
 base_url: "https://wegame.shallow.ink"
 
-# 订阅商品列表（检测到这些商品上货就推送，支持部分匹配）
-subscription_items:
-  - "国王球"
-  - "棱镜球"
-  - "炫彩精灵蛋"
-  - "星空蛋"
-  - "分院帽"
-  - "命运蛋"
-
 # 检查间隔（秒）
-check_interval: 300  # 5分钟
+check_interval: 60
 
-# 凭证文件路径
-credentials_file: "credentials.key"
+# 推送记录文件路径
+record_file: "/data/last_push.json"
 
-# Webhook 配置（实际 URL 从 credentials.key 读取）
+# Webhook 配置
 webhook:
   bark:
     enabled: true
     server: "https://bark.momolab.cc"
-  feishu:
-    enabled: false
-  dingtalk:
-    enabled: false
-  discord:
-    enabled: false
-
-# 推送记录文件路径
-record_file: "/data/last_push.json"

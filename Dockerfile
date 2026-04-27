@@ -12,7 +12,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # 复制代码
 COPY push.py .
-COPY config.yaml .
 
 # 数据目录
 RUN mkdir -p /data
