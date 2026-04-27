@@ -11,7 +11,7 @@ serverchan: false
 
 # Bark配置
 bark_key: "placeholder"
-bark_server: "https://bark.momolab.cc"
+bark_server: "https://api.day.app"
 bark_icon: "https://d1.aag.moe/public/2026/04/27/91e1e7cbf665f0a4.png"
 
 # 飞书配置
