@@ -1,4 +1,4 @@
-![logo](https://raw.githubusercontent.com/JayeGT002/rocom-push/main/logo.png)
+![logo](https://github.com/JayeGT002/rocom-push/blob/main/logo.png?raw=true)
 
 # RocoM-Webhook-Push - 远行商人Webhook推送通知
 
