@@ -16,14 +16,28 @@
 
 ## 快速部署
 
-### 1. 下载项目
+### Docker Compose（一键部署，推荐）
 
 ```bash
-git clone https://github.com/JayeGT002/rocom-push.git
-cd rocom-push
+mkdir -p /opt/rocom-push && cd /opt/rocom-push
+# 下载 docker-compose.yaml
+curl -O https://raw.githubusercontent.com/JayeGT002/RocoM-Webhook-Push/main/docker-compose.yaml
+# 下载配置文件
+curl -O https://raw.githubusercontent.com/JayeGT002/RocoM-Webhook-Push/main/settings.yaml
+# 启动
+docker compose up -d
 ```
 
-### 2. 配置
+### 手动部署
+
+#### 1. 克隆项目
+
+```bash
+git clone https://github.com/JayeGT002/RocoM-Webhook-Push.git
+cd RocoM-Webhook-Push
+```
+
+#### 2. 配置
 
 编辑 `settings.yaml`，填入你的凭证：
 
@@ -42,7 +56,7 @@ serverchan: false
 # Bark配置
 bark_key: "你的 Bark Key"
 bark_server: "https://api.day.app"
-bark_icon: "https://raw.githubusercontent.com/JayeGT002/rocom-push/main/logo.png"
+bark_icon: "https://raw.githubusercontent.com/JayeGT002/RocoM-Webhook-Push/main/logo.png"
 
 # 飞书配置
 feishu_hook: "你的飞书 Webhook URL"
@@ -53,7 +67,7 @@ serverchan_uid: "你的 UID"
 serverchan_key: "你的 SendKey"
 ```
 
-### 3. 启动
+#### 3. 启动
 
 ```bash
 docker compose up -d --build
@@ -94,7 +108,7 @@ docker compose logs -f
 ## 目录结构
 
 ```
-rocom-push/
+RocoM-Webhook-Push/
 ├── settings.yaml       # 配置文件（包含所有凭证）
 ├── docker-compose.yaml
 ├── Dockerfile
