@@ -73,6 +73,7 @@ def merge_config() -> dict:
 
     # ── Server酱 ──
     cfg["serverchan_key"] = settings.get("serverchan_key", "")
+    cfg["serverchan_uid"] = settings.get("serverchan_uid", "")
 
     return cfg
 
@@ -142,12 +143,14 @@ def send_feishu(cfg: dict, message: str):
 
 
 def send_serverchan(cfg: dict, title: str, desp: str):
-    if not cfg["serverchan_enabled"]:
+    if not cfg.get("serverchan_enabled"):
         return
-    key = cfg["serverchan_key"]
-    if not key or "你的" in key:
+    uid = cfg.get("serverchan_uid", "")
+    sendkey = cfg.get("serverchan_key", "")
+    if not uid or not sendkey or "placeholder" in (uid + sendkey):
         return
-    url = f"https://sctapi.ftqq.com/{key}.send"
+    # Server酱 V3
+    url = f"https://{uid}.push.ft07.com/send/{sendkey}.send"
     params = urllib.parse.urlencode({"title": title, "desp": desp})
     try:
         req = urllib.request.Request(f"{url}?{params}")
