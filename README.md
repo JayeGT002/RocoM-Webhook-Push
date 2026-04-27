@@ -44,29 +44,27 @@ cd RocoM-Webhook-Push
 编辑 `settings.yaml`，填入你的凭证：
 
 ```yaml
-# 推送配置
-
-# WeGmae API配置
-wegame_api_key: "从 https://wegame.shallow.ink 获取"
+# WeGmae API Key配置
+# 若API Key失效请提交issues或自行寻找可用WeGmae API Key
+wegame_api_key: "sk-ba042e079cf9ccb30e72b3d5af458f45"
 base_url: "https://wegame.shallow.ink"
 
-# 推送渠道开关（true 开启，false 关闭，默认启用bark通道，如非必要请修改。）
+# 推送渠道开关（true 开启，false 关闭）
 bark: true
 feishu: false
 serverchan: false
 
 # Bark配置
-bark_key: "你的 Bark Key"
+bark_key: "enter_your_bark_key"
 bark_server: "https://api.day.app"
-bark_icon: "https://raw.githubusercontent.com/JayeGT002/RocoM-Webhook-Push/main/logo.png"
+bark_icon: "https://ghproxy.net/https://raw.githubusercontent.com/JayeGT002/RocoM-Webhook-Push/main/logo.png"
 
 # 飞书配置
-feishu_hook: "你的飞书 Webhook URL"
+feishu_hook: "enter_your_feishu_hook"
 
 # Serverchan配置
-# 不兼容Server酱Tubro，请从Server酱³官网 https://sc3.ft07.com 获取相关配置。
-serverchan_uid: "你的 UID"
-serverchan_key: "你的 SendKey"
+serverchan_uid: "enter_your_serverchan_uid"
+serverchan_key: "enter_your_serverchan_key"
 ```
 
 #### 3. 启动
