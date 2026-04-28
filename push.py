@@ -370,6 +370,8 @@ def main():
                 record["last_push"] = check_time
                 save_record(record_file, record)
                 log.info("推送完成，停止检查，等待下次轮次")
+                time.sleep(max((get_next_round_start() - datetime.now()).total_seconds(), 60))
+                continue
             else:
                 log.info("内容无变化，继续监控")
         else:
