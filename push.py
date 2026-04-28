@@ -363,15 +363,7 @@ def main():
                 log.info("检测到内容变化，推送！")
                 send_notifications(active, round_str, check_time, cfg)
             elif not active:
-                log.info("当前无上架商品，跳过推送")
-                last_hash = current_hash
-                record["last_round"] = current_round
-                record["last_hash"] = current_hash
-                record["last_push"] = check_time
-                save_record(record_file, record)
-                log.info("推送完成，停止检查，等待下次轮次")
-                time.sleep(max((get_next_round_start() - datetime.now()).total_seconds(), 60))
-                continue
+                log.info("当前无上架商品，继续监控（API可能有延迟）")
             else:
                 log.info("内容无变化，继续监控")
             time.sleep(max((get_next_round_start() - datetime.now()).total_seconds(), 60))
