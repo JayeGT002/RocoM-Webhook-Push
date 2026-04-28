@@ -362,12 +362,17 @@ def main():
             if active and current_hash and current_hash != last_hash:
                 log.info("检测到内容变化，推送！")
                 send_notifications(active, round_str, check_time, cfg)
+                log.info("推送完成，本轮结束，休眠至下一轮")
+                time.sleep(max((get_next_round_start() - datetime.now()).total_seconds(), 60))
+                continue
             elif not active:
-                log.info("当前无上架商品，继续监控（API可能有延迟）")
+                log.info("当前无上架商品，继续监控（API可能有延迟），2分钟后再次检测")
+                time.sleep(120)
+                continue
             else:
-                log.info("内容无变化，继续监控")
-            time.sleep(max((get_next_round_start() - datetime.now()).total_seconds(), 60))
-            continue
+                log.info("内容无变化，本轮结束，休眠至下一轮")
+                time.sleep(max((get_next_round_start() - datetime.now()).total_seconds(), 60))
+                continue
         else:
             log.warning("获取数据失败")
             time.sleep(60)
