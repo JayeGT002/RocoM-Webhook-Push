@@ -13,6 +13,7 @@
 """
 
 import hashlib
+import hmac
 import json
 import logging
 import os
@@ -79,10 +80,15 @@ def merge_config() -> dict:
 
     # ── 飞书 ──
     cfg["feishu_hook"] = settings.get("feishu_hook", "")
+    cfg["feishu_signing_secret"] = settings.get("feishu_signing_secret", "")
 
     # ── Server酱 ──
     cfg["serverchan_key"] = settings.get("serverchan_key", "")
     cfg["serverchan_uid"] = settings.get("serverchan_uid", "")
+
+    # ── 企业微信 ──
+    cfg["wecom_enabled"] = settings.get("wecom", False)
+    cfg["wecom_hook"] = settings.get("wecom_hook", "")
 
     return cfg
 
@@ -138,9 +144,21 @@ def send_feishu(cfg: dict, message: str):
     url = cfg["feishu_hook"]
     if not url or "你的" in url:
         return
+
+    timestamp = str(int(time.time()))
+    headers = {"Content-Type": "application/json"}
+
+    # 签名校验（可选）
+    secret = cfg.get("feishu_signing_secret", "")
+    if secret:
+        sign_str = f"{timestamp}\n{secret}"
+        signature = hmac.new(secret.encode(), sign_str.encode(), hashlib.sha256).hexdigest()
+        headers["X-Lark-Signature"] = signature
+        headers["timestamp"] = timestamp
+
     payload = {"msg_type": "text", "content": {"text": message}}
     data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
+    req = urllib.request.Request(url, data=data, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
             if resp.status == 200:
@@ -149,6 +167,25 @@ def send_feishu(cfg: dict, message: str):
                 log.warning(f"飞书推送失败: {resp.status}")
     except Exception as e:
         log.warning(f"飞书请求异常: {e}")
+
+
+def send_wecom(cfg: dict, message: str):
+    if not cfg.get("wecom_enabled"):
+        return
+    url = cfg.get("wecom_hook", "")
+    if not url or "你的" in url or "enter" in url:
+        return
+    payload = {"msgtype": "text", "text": {"content": message}}
+    data = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            if resp.status == 200:
+                log.info("企业微信推送成功")
+            else:
+                log.warning(f"企业微信推送失败: {resp.status}")
+    except Exception as e:
+        log.warning(f"企业微信请求异常: {e}")
 
 
 def send_serverchan(cfg: dict, title: str, desp: str):
@@ -184,6 +221,7 @@ def send_notifications(props: list[dict], round_str: str, check_time: str, cfg: 
 
     send_bark(cfg, title, body)
     send_feishu(cfg, f"🏪 远行商人上新！\n{body}")
+    send_wecom(cfg, f"🏪 远行商人上新！\n{body}")
     send_serverchan(cfg, title, body)
 
 
@@ -266,6 +304,9 @@ def main():
     elif cfg["serverchan_enabled"] and cfg["serverchan_key"] and "placeholder" not in cfg["serverchan_key"]:
         send_serverchan(cfg, "你远哥来咯", "启动成功，通知功能正常")
         log.info("[启动测试] Server酱测试推送已发送")
+    elif cfg.get("wecom_enabled") and cfg.get("wecom_hook") and "enter" not in cfg.get("wecom_hook", ""):
+        send_wecom(cfg, "✅ 启动成功，通知功能正常")
+        log.info("[启动测试] 企业微信测试推送已发送")
     else:
         log.info("未启用任何推送渠道，跳过启动测试")
 
@@ -318,9 +359,11 @@ def main():
             for p in active:
                 log.info(f"  - {p.get('name')} (截止 {datetime.fromtimestamp(p.get('end_time',0)/1000).strftime('%H:%M')})")
 
-            if current_hash and current_hash != last_hash:
+            if active and current_hash and current_hash != last_hash:
                 log.info("检测到内容变化，推送！")
                 send_notifications(active, round_str, check_time, cfg)
+            elif not active:
+                log.info("当前无上架商品，跳过推送")
                 last_hash = current_hash
                 record["last_round"] = current_round
                 record["last_hash"] = current_hash

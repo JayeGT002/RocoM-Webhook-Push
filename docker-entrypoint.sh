@@ -18,6 +18,7 @@ base_url: "https://wegame.shallow.ink"
 bark: true
 feishu: false
 serverchan: false
+wecom: false
 
 # Bark配置
 bark_key: "enter_your_bark_key"
@@ -26,10 +27,15 @@ bark_icon: "https://ghproxy.net/https://raw.githubusercontent.com/JayeGT002/Roco
 
 # 飞书配置
 feishu_hook: "enter_your_feishu_hook"
+# 飞书签名密钥（可选，启用签名校验后填入）
+feishu_signing_secret: ""
 
 # Serverchan配置
 serverchan_uid: "enter_your_serverchan_uid"
 serverchan_key: "enter_your_serverchan_key"
+
+# 企业微信配置
+wecom_hook: "enter_your_wecom_hook"
 TEMPLATE
     echo "[entrypoint] 模板已生成，请编辑 ${SETTINGS_FILE} 后重启容器"
 else
