@@ -374,10 +374,11 @@ def main():
                 continue
             else:
                 log.info("内容无变化，继续监控")
+            time.sleep(max((get_next_round_start() - datetime.now()).total_seconds(), 60))
+            continue
         else:
             log.warning("获取数据失败")
-
-        time.sleep(120)
+            time.sleep(60)
 
 
 if __name__ == "__main__":
