@@ -3,7 +3,7 @@
 
 # RocoM-Webhook-Push
 
-洛克王国远行商人 Webhook 推送通知，支持 Bark / 飞书 / Server酱³
+洛克王国远行商人 Webhook 推送通知，支持 Bark / 飞书 / Server酱³ / 企业微信
 
 本项目基于 [astrbot_plugin_rocom](https://github.com/Entropy-Increase-Team/astrbot_plugin_rocom) 的「远行商人订阅」功能二次修改
 
@@ -54,26 +54,33 @@ mkdir -p config data
 编辑 `config/settings.yaml`，填入你的凭证：
 
 ```yaml
-# WeGmae API配置
-wegame_api_key: "从 https://wegame.shallow.ink 获取"
+# WeGmae API Key配置
+# 若API Key失效请提交issues或自行寻找可用WeGmae API Key
+wegame_api_key: "sk-ba042e079cf9ccb30e72b3d5af458f45"
 base_url: "https://wegame.shallow.ink"
 
 # 推送渠道开关（true 开启，false 关闭）
 bark: true
 feishu: false
 serverchan: false
+wecom: false
 
 # Bark配置
-bark_key: "你的 Bark Key"
+bark_key: "enter_your_bark_key"
 bark_server: "https://api.day.app"
-bark_icon: ""
+bark_icon: "https://ghproxy.net/https://raw.githubusercontent.com/JayeGT002/RocoM-Webhook-Push/main/logo.png"
 
 # 飞书配置
-feishu_hook: "你的飞书 Webhook URL"
+feishu_hook: "enter_your_feishu_hook"
+# 飞书签名密钥（可选，启用签名校验后填入）
+feishu_signing_secret: ""
 
 # Serverchan配置
-serverchan_uid: "你的 UID"
-serverchan_key: "你的 SendKey"
+serverchan_uid: "enter_your_serverchan_uid"
+serverchan_key: "enter_your_serverchan_key"
+
+# 企业微信配置
+wecom_hook: "enter_your_wecom_hook"
 ```
 
 ### 第四步：启动
@@ -94,7 +101,8 @@ docker compose logs -f
 
 ### Wegame API Key
 
-从 [wegame.shallow.ink](https://wegame.shallow.ink) 注册获取。
+sk-ba042e079cf9ccb30e72b3d5af458f45<br/>
+如apikey失效请提交issues或者自行寻找可用apikey
 
 ### Bark
 
@@ -120,7 +128,7 @@ docker compose logs -f
 2. 复制 UID 和 SendKey 分别填入对应字段
 3. 将 `serverchan` 改为 `true`
 
-> ⚠️ Server酱³与 Turbo 不兼容，请使用³版本。
+> ⚠️ 仅支持 Server酱³ ，不支持 Server酱Tubro ，请前往 https://sc3.ft07.com 获取 UID 和 Sendkey
 
 ## 目录结构
 
