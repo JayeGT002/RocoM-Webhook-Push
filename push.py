@@ -282,11 +282,6 @@ def get_active_props(data: dict) -> list[dict]:
     return all_props
 
 
-def content_hash(props: list[dict]) -> str:
-    names = sorted(p.get("name", "") for p in props)
-    return hashlib.md5("|".join(names).encode()).hexdigest()
-
-
 # ─── 主循环 ───
 def main():
     cfg = merge_config()
@@ -319,7 +314,6 @@ def main():
     record_file = cfg["record_file"]
     record = load_record(record_file)
     last_round = record.get("last_round", 0)
-    last_hash = record.get("last_hash", "")
 
     shutdown = False
 
@@ -345,7 +339,6 @@ def main():
 
         if current_round != last_round:
             log.info(f"=== 轮次 {round_str} 开始 ===")
-            last_hash = ""
             last_round = current_round
 
         log.info(f"[{check_time}] 轮次 {round_str} 检测中...")
@@ -354,24 +347,14 @@ def main():
 
         if data:
             active = get_active_props(data)
-            current_hash = content_hash(active)
             log.info(f"当前上架商品数: {len(active)}")
             for p in active:
                 log.info(f"  - {p.get('name')} (截止 {datetime.fromtimestamp(p.get('end_time',0)/1000).strftime('%H:%M')})")
 
-            if active and current_hash and current_hash != last_hash:
-                log.info("检测到内容变化，推送！")
+            if active:
+                log.info("检测到上架商品，推送！")
                 send_notifications(active, round_str, check_time, cfg)
-                last_hash = current_hash
                 log.info("推送完成，本轮结束，休眠至下一轮")
-                time.sleep(max((get_next_round_start() - datetime.now()).total_seconds(), 60))
-                continue
-            elif not active:
-                log.info("当前无上架商品，继续监控（API可能有延迟），2分钟后再次检测")
-                time.sleep(120)
-                continue
-            else:
-                log.info("内容无变化，本轮结束，休眠至下一轮")
                 time.sleep(max((get_next_round_start() - datetime.now()).total_seconds(), 60))
                 continue
         else:
