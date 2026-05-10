@@ -9,7 +9,7 @@
 
 """
 洛克王国远行商人推送程序
-轮次触发模式：整点唤醒 → 每2分钟检查一次 → 有变化立即推送 → 推送完停止检查直至下次轮次
+轮次触发模式：整点唤醒 → 每1分钟检查一次 → 限时新商品立即推送 → 推送后继续检查直至本轮次结束
 """
 
 import hashlib
@@ -301,17 +301,29 @@ def get_prop_ids(props: list[dict]) -> set[int]:
 def is_limited_time_prop(prop: dict) -> bool:
     """
     判断商品是否为「限时商品」。
-    结束时间不是当天 23:59:59（或 23:59:00）的视为限时商品，
-    全天商品（结束时间为当天最后一分钟/秒）不单独推送。
+    全天商品：从当天 0 点左右开始上架，到 23:59 左右结束，开始时间早于 8:00。
+    限时商品：从轮次开始时间（8:00/12:00/16:00/20:00）上架。
     """
     end_time_ms = prop.get("end_time", 0)
-    if end_time_ms <= 0:
+    start_time_ms = prop.get("start_time", 0)
+    if end_time_ms <= 0 or start_time_ms <= 0:
         return False
     end_dt = datetime.fromtimestamp(end_time_ms / 1000)
-    # 全天商品：结束时间在当天 23:59:00 ~ 23:59:59 之间
-    if end_dt.hour == 23 and end_dt.minute == 59:
+    start_dt = datetime.fromtimestamp(start_time_ms / 1000)
+    # 全天商品：开始时间早于 8:00，且结束时间在 23:xx（允许分钟偏差）
+    if start_dt.hour < 8 and end_dt.hour == 23 and end_dt.minute >= 50:
         return False
     return True
+
+
+def is_current_round_prop(prop: dict, round_start: datetime) -> bool:
+    """判断商品是否是在当前轮次内开始上架的（用于区分跨轮次残留的全天商品）。"""
+    start_time_ms = prop.get("start_time", 0)
+    if start_time_ms <= 0:
+        return False
+    start_dt = datetime.fromtimestamp(start_time_ms / 1000)
+    # 允许 5 分钟偏差，兼容 API 延迟
+    return start_dt >= (round_start - timedelta(minutes=5))
 
 
 def has_limited_time_props(props: list[dict]) -> bool:
@@ -390,37 +402,46 @@ def main():
 
         if data:
             active = get_active_props(data)
-            current_prop_ids = get_prop_ids(active)
             log.info(f"当前上架商品数: {len(active)}")
             for p in active:
                 log.info(f"  - {p.get('name')} (截止 {datetime.fromtimestamp(p.get('end_time',0)/1000).strftime('%H:%M')})")
 
-            if active:
-                # 判断是否存在限时商品；仅有全天商品时不推送
-                if not has_limited_time_props(active):
-                    log.info("当前仅有全天商品，无限时商品，跳过推送，2分钟后再次检测")
-                    time.sleep(120)
-                    continue
+            # 分离限时商品与全天商品
+            limited_props = [p for p in active if is_limited_time_prop(p)]
+            all_day_props = [p for p in active if not is_limited_time_prop(p)]
 
-                # 判断是否有新商品（与上次推送的商品列表对比）
-                new_props = current_prop_ids - last_pushed_prop_ids
-                if new_props:
-                    log.info(f"检测到限时新商品（{len(new_props)} 个），推送！")
-                    send_notifications(active, round_str, check_time, cfg)
-                    last_pushed_prop_ids = current_prop_ids
+            # 获取当前轮次开始时间，用于过滤跨轮次残留商品
+            round_start = now.replace(hour=(current_round - 1) * 4 + 8, minute=0, second=0, microsecond=0)
+            # 只关注「当前轮次才开始上架」的限时商品
+            fresh_limited = [p for p in limited_props if is_current_round_prop(p, round_start)]
+
+            if all_day_props and not fresh_limited:
+                names = [p.get('name') for p in all_day_props]
+                log.info(f"当前仅有全天商品（{'、'.join(names)}），本轮次限时商品尚未刷新，1分钟后再次检测")
+                time.sleep(60)
+                continue
+
+            if fresh_limited:
+                current_fresh_ids = get_prop_ids(fresh_limited)
+                new_ids = current_fresh_ids - last_pushed_prop_ids
+
+                if new_ids:
+                    log.info(f"检测到本轮次限时新商品（{len(new_ids)} 个），推送！")
+                    send_notifications(fresh_limited, round_str, check_time, cfg)
+                    last_pushed_prop_ids = current_fresh_ids
                     record["last_pushed_round"] = current_round
                     record["last_pushed_time"] = check_time
-                    record["last_pushed_prop_ids"] = list(current_prop_ids)
+                    record["last_pushed_prop_ids"] = list(current_fresh_ids)
                     save_record(record_file, record)
                     log.info("推送完成，本轮结束，休眠至下一轮")
                     time.sleep(max((get_next_round_start() - datetime.now()).total_seconds(), 60))
                     continue
                 else:
-                    log.info("商品列表与上次推送一致（固定商品未刷新），跳过推送，2分钟后再次检测")
-                    time.sleep(120)
+                    log.info("本轮次限时商品列表与上次推送一致，无新商品，1分钟后再次检测")
             else:
-                log.info("当前无上架商品，2分钟后再次检测")
-                time.sleep(120)
+                log.info("当前无上架商品，1分钟后再次检测")
+
+            time.sleep(60)
         else:
             log.warning("获取数据失败，1分钟后重试")
             time.sleep(60)
