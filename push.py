@@ -282,6 +282,22 @@ def get_active_props(data: dict) -> list[dict]:
     return all_props
 
 
+def get_prop_ids(props: list[dict]) -> set[int]:
+    """提取商品唯一标识集合，用于判断商品列表是否变化。"""
+    ids = set()
+    for p in props:
+        # 优先使用 id，其次用 name + start_time 组合做唯一标识
+        pid = p.get("id")
+        if pid is not None:
+            ids.add(pid)
+        else:
+            # 回退：用 name 和 start_time 拼接
+            name = p.get("name", "")
+            start = p.get("start_time", 0)
+            ids.add(hash((name, start)))
+    return ids
+
+
 # ─── 主循环 ───
 def main():
     cfg = merge_config()
@@ -314,6 +330,7 @@ def main():
     record_file = cfg["record_file"]
     record = load_record(record_file)
     last_round = record.get("last_round", 0)
+    last_pushed_prop_ids = set(record.get("last_pushed_prop_ids", []))
 
     shutdown = False
 
@@ -341,6 +358,9 @@ def main():
             log.info(f"=== 轮次 {round_str} 开始 ===")
             last_round = current_round
             record["last_round"] = last_round
+            # 轮次切换时清空已推送商品记录，确保新轮次能正常检测
+            last_pushed_prop_ids = set()
+            record["last_pushed_prop_ids"] = []
             save_record(record_file, record)
 
         log.info(f"[{check_time}] 轮次 {round_str} 检测中...")
@@ -349,19 +369,28 @@ def main():
 
         if data:
             active = get_active_props(data)
+            current_prop_ids = get_prop_ids(active)
             log.info(f"当前上架商品数: {len(active)}")
             for p in active:
                 log.info(f"  - {p.get('name')} (截止 {datetime.fromtimestamp(p.get('end_time',0)/1000).strftime('%H:%M')})")
 
             if active:
-                log.info("检测到上架商品，推送！")
-                send_notifications(active, round_str, check_time, cfg)
-                record["last_pushed_round"] = current_round
-                record["last_pushed_time"] = check_time
-                save_record(record_file, record)
-                log.info("推送完成，本轮结束，休眠至下一轮")
-                time.sleep(max((get_next_round_start() - datetime.now()).total_seconds(), 60))
-                continue
+                # 判断是否有新商品（与上次推送的商品列表对比）
+                new_props = current_prop_ids - last_pushed_prop_ids
+                if new_props:
+                    log.info(f"检测到新商品（{len(new_props)} 个），推送！")
+                    send_notifications(active, round_str, check_time, cfg)
+                    last_pushed_prop_ids = current_prop_ids
+                    record["last_pushed_round"] = current_round
+                    record["last_pushed_time"] = check_time
+                    record["last_pushed_prop_ids"] = list(current_prop_ids)
+                    save_record(record_file, record)
+                    log.info("推送完成，本轮结束，休眠至下一轮")
+                    time.sleep(max((get_next_round_start() - datetime.now()).total_seconds(), 60))
+                    continue
+                else:
+                    log.info("商品列表与上次推送一致（固定商品未刷新），跳过推送，2分钟后再次检测")
+                    time.sleep(120)
             else:
                 log.info("当前无上架商品，2分钟后再次检测")
                 time.sleep(120)
