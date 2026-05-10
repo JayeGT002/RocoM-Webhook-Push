@@ -298,6 +298,27 @@ def get_prop_ids(props: list[dict]) -> set[int]:
     return ids
 
 
+def is_limited_time_prop(prop: dict) -> bool:
+    """
+    判断商品是否为「限时商品」。
+    结束时间不是当天 23:59:59（或 23:59:00）的视为限时商品，
+    全天商品（结束时间为当天最后一分钟/秒）不单独推送。
+    """
+    end_time_ms = prop.get("end_time", 0)
+    if end_time_ms <= 0:
+        return False
+    end_dt = datetime.fromtimestamp(end_time_ms / 1000)
+    # 全天商品：结束时间在当天 23:59:00 ~ 23:59:59 之间
+    if end_dt.hour == 23 and end_dt.minute == 59:
+        return False
+    return True
+
+
+def has_limited_time_props(props: list[dict]) -> bool:
+    """判断商品列表中是否存在限时商品。"""
+    return any(is_limited_time_prop(p) for p in props)
+
+
 # ─── 主循环 ───
 def main():
     cfg = merge_config()
@@ -375,10 +396,16 @@ def main():
                 log.info(f"  - {p.get('name')} (截止 {datetime.fromtimestamp(p.get('end_time',0)/1000).strftime('%H:%M')})")
 
             if active:
+                # 判断是否存在限时商品；仅有全天商品时不推送
+                if not has_limited_time_props(active):
+                    log.info("当前仅有全天商品，无限时商品，跳过推送，2分钟后再次检测")
+                    time.sleep(120)
+                    continue
+
                 # 判断是否有新商品（与上次推送的商品列表对比）
                 new_props = current_prop_ids - last_pushed_prop_ids
                 if new_props:
-                    log.info(f"检测到新商品（{len(new_props)} 个），推送！")
+                    log.info(f"检测到限时新商品（{len(new_props)} 个），推送！")
                     send_notifications(active, round_str, check_time, cfg)
                     last_pushed_prop_ids = current_prop_ids
                     record["last_pushed_round"] = current_round
