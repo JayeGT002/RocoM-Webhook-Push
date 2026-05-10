@@ -42,10 +42,12 @@ else
     echo "[entrypoint] settings.yaml 已存在，跳过生成"
 fi
 
-echo ""
-echo "=========================================="
-echo "  请编辑 settings.yaml 配置文件后重启容器"
-echo "=========================================="
-echo ""
+if grep -q "enter_your" "${SETTINGS_FILE}" 2>/dev/null || grep -q "placeholder" "${SETTINGS_FILE}" 2>/dev/null; then
+    echo ""
+    echo "=========================================="
+    echo "  请编辑 settings.yaml 配置文件后重启容器"
+    echo "=========================================="
+    echo ""
+fi
 
 exec python /app/push.py

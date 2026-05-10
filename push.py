@@ -154,7 +154,7 @@ def send_feishu(cfg: dict, message: str):
         sign_str = f"{timestamp}\n{secret}"
         signature = hmac.new(secret.encode(), sign_str.encode(), hashlib.sha256).hexdigest()
         headers["X-Lark-Signature"] = signature
-        headers["timestamp"] = timestamp
+        headers["X-Lark-Request-Timestamp"] = timestamp
 
     payload = {"msg_type": "text", "content": {"text": message}}
     data = json.dumps(payload).encode("utf-8")
@@ -261,7 +261,7 @@ def get_next_round_start() -> datetime:
     now = datetime.now()
     hour = now.hour
     for rh in [8, 12, 16, 20]:
-        if hour < rh or (hour == rh and now.minute > 0):
+        if hour < rh:
             return now.replace(hour=rh, minute=0, second=0, microsecond=0)
     tomorrow = now + timedelta(days=1)
     return tomorrow.replace(hour=8, minute=0, second=0, microsecond=0)
@@ -340,6 +340,8 @@ def main():
         if current_round != last_round:
             log.info(f"=== 轮次 {round_str} 开始 ===")
             last_round = current_round
+            record["last_round"] = last_round
+            save_record(record_file, record)
 
         log.info(f"[{check_time}] 轮次 {round_str} 检测中...")
 
@@ -354,11 +356,17 @@ def main():
             if active:
                 log.info("检测到上架商品，推送！")
                 send_notifications(active, round_str, check_time, cfg)
+                record["last_pushed_round"] = current_round
+                record["last_pushed_time"] = check_time
+                save_record(record_file, record)
                 log.info("推送完成，本轮结束，休眠至下一轮")
                 time.sleep(max((get_next_round_start() - datetime.now()).total_seconds(), 60))
                 continue
+            else:
+                log.info("当前无上架商品，2分钟后再次检测")
+                time.sleep(120)
         else:
-            log.warning("获取数据失败")
+            log.warning("获取数据失败，1分钟后重试")
             time.sleep(60)
 
 
