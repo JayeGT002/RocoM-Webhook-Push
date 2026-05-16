@@ -438,11 +438,11 @@ def main():
                     continue
                 else:
                     log.info("本轮次限时商品列表与上次推送一致，无新商品，1分钟后再次检测")
-        else:
-            if active:
-                log.info("当前仅有往轮次残留商品，1分钟后再次检测")
             else:
-                log.info("当前无上架商品，1分钟后再次检测")
+                if active:
+                    log.info("当前仅有往轮次残留商品，1分钟后再次检测")
+                else:
+                    log.info("当前无上架商品，1分钟后再次检测")
 
             time.sleep(60)
         else:
