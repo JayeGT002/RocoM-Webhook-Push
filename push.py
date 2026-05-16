@@ -427,7 +427,7 @@ def main():
 
                 if new_ids:
                     log.info(f"检测到本轮次限时新商品（{len(new_ids)} 个），推送！")
-                    send_notifications(fresh_limited, round_str, check_time, cfg)
+                    send_notifications(active, round_str, check_time, cfg)
                     last_pushed_prop_ids = current_fresh_ids
                     record["last_pushed_round"] = current_round
                     record["last_pushed_time"] = check_time
@@ -438,6 +438,9 @@ def main():
                     continue
                 else:
                     log.info("本轮次限时商品列表与上次推送一致，无新商品，1分钟后再次检测")
+        else:
+            if active:
+                log.info("当前仅有往轮次残留商品，1分钟后再次检测")
             else:
                 log.info("当前无上架商品，1分钟后再次检测")
 
