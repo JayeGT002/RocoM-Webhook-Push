@@ -8,7 +8,7 @@ RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && 
 RUN pip install --no-cache-dir PyYAML
 
 COPY push.py .
-COPY settings.yaml .
+
 COPY docker-entrypoint.sh .
 RUN chmod +x /app/docker-entrypoint.sh
 

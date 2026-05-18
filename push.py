@@ -175,7 +175,7 @@ def send_wecom(cfg: dict, message: str):
     if not cfg.get("wecom_enabled"):
         return
     url = cfg.get("wecom_hook", "")
-    if not url or "你的" in url or "enter" in url:
+    if not url or "你的" in url:
         return
     payload = {"msgtype": "text", "text": {"content": message}}
     data = json.dumps(payload).encode("utf-8")
@@ -374,7 +374,7 @@ def main():
     log.info(f"等待下次轮次开始（8/12/16/20点）...")
 
     if not cfg["wegame_api_key"]:
-        log.error("WEGAME_API_KEY 未配置，请检查 .wegame.env 或 credentials.key")
+        log.error("WEGAME_API_KEY 未配置，请检查 config/settings.yaml 中的 wegame_api_key 字段")
         return
 
     record_file = cfg["record_file"]
