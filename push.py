@@ -460,12 +460,11 @@ def main():
 
                 if new_ids:
                     log.info(f"检测到本轮次限时新商品（{len(new_ids)} 个），推送！")
-                    # 只推送限时新品，不推送全天商品（全天商品用户可直接在游戏中看到）
-                    send_notifications(fresh_limited, round_str, check_time, cfg)
-                    last_pushed_prop_ids = current_fresh_ids
+                    send_notifications(active, round_str, check_time, cfg)
+                    last_pushed_prop_ids = get_prop_ids(active)
                     record["last_pushed_round"] = current_round
                     record["last_pushed_time"] = check_time
-                    record["last_pushed_prop_ids"] = list(current_fresh_ids)
+                    record["last_pushed_prop_ids"] = list(last_pushed_prop_ids)
                     save_record(record_file, record)
                     log.info("推送完成，本轮结束，休眠至下一轮")
                     miss_count = 0
