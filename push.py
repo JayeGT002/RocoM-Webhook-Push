@@ -211,13 +211,17 @@ def send_serverchan(cfg: dict, title: str, desp: str):
         log.warning(f"Server酱请求异常: {e}")
 
 
-def send_notifications(props: list[dict], round_str: str, check_time: str, cfg: dict):
-    names = [p["name"] for p in props]
+def send_notifications(limited_props: list[dict], all_day_props: list[dict], round_str: str, check_time: str, cfg: dict):
+    limited_names = [p["name"] for p in limited_props]
+    all_day_names = [p["name"] for p in all_day_props]
     body_lines = [
         f"轮次：{round_str}",
-        f"商品：{'、'.join(names)}",
-        f"检测时间：{check_time}",
     ]
+    if limited_names:
+        body_lines.append(f"限时商品：{'、'.join(limited_names)}")
+    if all_day_names:
+        body_lines.append(f"全天售卖商品：{'、'.join(all_day_names)}")
+    body_lines.append(f"检测时间：{check_time}")
     body = "\n".join(body_lines)
     title = "你远哥来咯！"
 
@@ -274,13 +278,17 @@ def get_active_props(data: dict) -> list[dict]:
     if not activities:
         return []
     all_props = []
+    seen = set()
     now_ms = int(time.time() * 1000)
     for activity in activities:
         for prop in activity.get("get_props", []):
             start = prop.get("start_time", 0)
             end = prop.get("end_time", 0)
             if start <= now_ms <= end:
-                all_props.append(prop)
+                key = prop.get("_id") or hash((prop.get("name", ""), prop.get("start_time", 0)))
+                if key not in seen:
+                    seen.add(key)
+                    all_props.append(prop)
     return all_props
 
 
@@ -460,7 +468,7 @@ def main():
 
                 if new_ids:
                     log.info(f"检测到本轮次限时新商品（{len(new_ids)} 个），推送！")
-                    send_notifications(active, round_str, check_time, cfg)
+                    send_notifications(short_props, long_props, round_str, check_time, cfg)
                     last_pushed_prop_ids = get_prop_ids(active)
                     record["last_pushed_round"] = current_round
                     record["last_pushed_time"] = check_time
