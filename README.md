@@ -93,8 +93,9 @@ docker compose logs -f
 
 ### Wegame API Key
 
-sk-ba042e079cf9ccb30e72b3d5af458f45<br/>
-如apikey失效请提交issues或者自行寻找可用apikey
+sk-0c1476b201301170e6360453becb27f5<br/>
+如apikey失效请提交issues或者自行寻找可用apikey<br/>
+⚠️注意：由熵增项目组维护的Wegame API即将上线付费服务，届时本项目将不再提供免费的API Key，如需要使用本项目请前往熵增项目组官网寻找获取方式。
 
 ### Bark
 
