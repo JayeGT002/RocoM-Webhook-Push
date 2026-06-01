@@ -9,6 +9,14 @@
 
 </div>
 
+## ⚠️项目API变更通知
+
+由于商人推送服务RocoM-Webhook-Push使用的上游接口开始收费，即日起本项目不再提供免费APIkey，您需要前往「洛克魔法书」（https://rocom.shallow.ink） 申请自用APIkey。
+
+注意：使用「洛克魔法书」的APIkey服务需要收费，此费用与本项目无关，与「洛克魔法书」API相关的问题请咨询「洛克魔法书」官方。
+
+本项目将在近期推送更新以便通知更多用户，如果有足够多的用户有需要，我们也将考虑更多替代方案。
+
 ## 工作原理
 
 - **非活动时间**（20:00～次日 08:00）：程序休眠，不占用资源
@@ -93,9 +101,7 @@ docker compose logs -f
 
 ### Wegame API Key
 
-sk-0c1476b201301170e6360453becb27f5<br/>
-如apikey失效请提交issues或者自行寻找可用apikey<br/>
-⚠️注意：由熵增项目组维护的Wegame API即将上线付费服务，届时本项目将不再提供免费的API Key，如需要使用本项目请前往熵增项目组官网寻找获取方式。
+请前往「洛克魔法书」（https://rocom.shallow.ink） 申请自用APIkey。
 
 ### Bark
 
