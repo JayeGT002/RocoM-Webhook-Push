@@ -11,7 +11,7 @@
 
 ## ⚠️项目API变更通知
 
-由于商人推送服务RocoM-Webhook-Push使用的上游接口开始收费，即日起本项目不再提供免费APIkey，您需要前往「洛克魔法书」（ https://rocom.shallow.ink ） 申请自用APIkey。
+由于商人推送服务RocoM-Webhook-Push使用的上游接口开始收费，即日起本项目不再提供免费APIkey，您需要前往「洛克魔法书」 https://rocom.shallow.ink  申请自用APIkey。
 
 注意：使用「洛克魔法书」的APIkey服务需要收费，此费用与本项目无关，与「洛克魔法书」API相关的问题请咨询「洛克魔法书」官方。
 
